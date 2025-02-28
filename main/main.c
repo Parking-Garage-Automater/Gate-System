@@ -28,15 +28,16 @@
 #define MQTT_TOPIC_EXIT "parking/gate/exit"
 
 /* Servo configuration */
-#define SERVO_MIN_PULSEWIDTH 500     /* Minimum pulse width in microseconds */
-#define SERVO_MAX_PULSEWIDTH 2500    /* Maximum pulse width in microseconds */
+#define SERVO_MIN_PULSEWIDTH 600     /* Minimum pulse width in microseconds */
+#define SERVO_MAX_PULSEWIDTH 2400    /* Maximum pulse width in microseconds */
 #define SERVO_MAX_DEGREE 180         /* Maximum angle in degrees */
 #define SERVO_ENTRY_GPIO 5           /* GPIO for entry gate servo */
 #define SERVO_EXIT_GPIO 18           /* GPIO for exit gate servo */
 
 /* Gate configuration */
 #define GATE_OPEN_ANGLE 90           /* Angle when gate is open */
-#define GATE_CLOSED_ANGLE 0          /* Angle when gate is closed */
+#define GATE_CLOSED_ANGLE_1 180      /* Angle for entry servo motor when gate is closed */
+#define GATE_CLOSED_ANGLE_2 200        /* Angle for exit servo motor when gate is closed */
 #define GATE_OPEN_TIME_MS 5000       /* Time to keep gate open in milliseconds */
 
 static const char *TAG = "GATE_SYSTEM";
@@ -60,7 +61,7 @@ static void close_entry_gate_task(void *pvParameters)
 {
     vTaskDelay(pdMS_TO_TICKS(GATE_OPEN_TIME_MS));
     ESP_LOGI(TAG, "Closing ENTRY gate...");
-    set_servo_angle(MCPWM_UNIT_0, MCPWM_TIMER_0, SERVO_ENTRY_GPIO, GATE_CLOSED_ANGLE);
+    set_servo_angle(MCPWM_UNIT_0, MCPWM_TIMER_0, SERVO_ENTRY_GPIO, GATE_CLOSED_ANGLE_1);
     vTaskDelete(NULL);
 }
 
@@ -85,7 +86,7 @@ static void close_exit_gate_task(void *pvParameters)
 {
     vTaskDelay(pdMS_TO_TICKS(GATE_OPEN_TIME_MS));
     ESP_LOGI(TAG, "Closing EXIT gate...");
-    set_servo_angle(MCPWM_UNIT_0, MCPWM_TIMER_1, SERVO_EXIT_GPIO, GATE_CLOSED_ANGLE);
+    set_servo_angle(MCPWM_UNIT_0, MCPWM_TIMER_1, SERVO_EXIT_GPIO, GATE_CLOSED_ANGLE_2);
     vTaskDelete(NULL);
 }
 
@@ -131,6 +132,9 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
 
         case MQTT_EVENT_DATA:
             ESP_LOGI(TAG, "MQTT data received!");
+
+            ESP_LOGI(TAG, "Topic: %.*s", event->topic_len, event->topic);
+            ESP_LOGI(TAG, "Data: %.*s", event->data_len, event->data);
 
             if (strncmp(event->topic, MQTT_TOPIC_ENTRY, event->topic_len) == 0) {
                 /* Check message content - expecting "open" */
@@ -250,20 +254,20 @@ static void servo_init(void)
         .duty_mode = MCPWM_DUTY_MODE_0,
         .counter_mode = MCPWM_UP_COUNTER,
     };
-    
+
     mcpwm_init(MCPWM_UNIT_0, MCPWM_TIMER_0, &pwm_config);
     mcpwm_init(MCPWM_UNIT_0, MCPWM_TIMER_1, &pwm_config);
-    
+
     /* Move servos to closed position */
-    set_servo_angle(MCPWM_UNIT_0, MCPWM_TIMER_0, SERVO_ENTRY_GPIO, GATE_CLOSED_ANGLE);
-    set_servo_angle(MCPWM_UNIT_0, MCPWM_TIMER_1, SERVO_EXIT_GPIO, GATE_CLOSED_ANGLE);
+    set_servo_angle(MCPWM_UNIT_0, MCPWM_TIMER_0, SERVO_ENTRY_GPIO, GATE_CLOSED_ANGLE_1);
+    set_servo_angle(MCPWM_UNIT_0, MCPWM_TIMER_1, SERVO_EXIT_GPIO, GATE_CLOSED_ANGLE_2);
 }
 
 /* Function to initialize MQTT */
 static void mqtt_init(void)
 {
     ESP_LOGI(TAG, "Initializing MQTT client...");
-    
+
     esp_mqtt_client_config_t mqtt_cfg = {
         .broker.address.hostname = MQTT_BROKER_ADDRESS,
         .broker.address.port = MQTT_BROKER_PORT,
@@ -271,7 +275,7 @@ static void mqtt_init(void)
         .credentials.username = MQTT_USERNAME,
         .credentials.authentication.password = MQTT_PASSWORD,
     };
-    
+
     mqtt_client = esp_mqtt_client_init(&mqtt_cfg);
     esp_mqtt_client_register_event(mqtt_client, ESP_EVENT_ANY_ID, mqtt_event_handler, NULL);
     esp_mqtt_client_start(mqtt_client);
@@ -280,19 +284,19 @@ static void mqtt_init(void)
 void app_main(void)
 {
     ESP_LOGI(TAG, "Starting gate system...");
-    
+
     esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
         ESP_ERROR_CHECK(nvs_flash_erase());
         ret = nvs_flash_init();
     }
     ESP_ERROR_CHECK(ret);
-    
+
     wifi_init();
-    
+
     servo_init();
-    
+
     mqtt_init();
-    
+
     ESP_LOGI(TAG, "Gate system initialized and ready.");
 }
