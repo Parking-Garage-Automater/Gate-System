@@ -51,14 +51,23 @@ static esp_mqtt_client_handle_t mqtt_client = NULL;
 /* Function to set servo angle */
 static void set_servo_angle(mcpwm_unit_t unit, mcpwm_timer_t timer, uint32_t gpio_num, uint32_t angle)
 {
-    uint32_t pulse_width_ticks = (SERVO_MIN_PULSEWIDTH + (((SERVO_MAX_PULSEWIDTH - SERVO_MIN_PULSEWIDTH) * angle) / SERVO_MAX_DEGREE)) * (MCPWM_TIMER_RESOLUTION_HZ / 1000000);
-    mcpwm_set_duty_in_us(unit, timer, MCPWM_OPR_A, pulse_width_ticks);
+    uint32_t pulse_width_us = (SERVO_MIN_PULSEWIDTH + (((SERVO_MAX_PULSEWIDTH - SERVO_MIN_PULSEWIDTH) * angle) / SERVO_MAX_DEGREE));
+    mcpwm_set_duty_in_us(unit, timer, MCPWM_OPR_A, pulse_width_us);
+}
+
+/* Function to close entry gate after delay */
+static void close_entry_gate_task(void *pvParameters)
+{
+    vTaskDelay(pdMS_TO_TICKS(GATE_OPEN_TIME_MS));
+    ESP_LOGI(TAG, "Closing ENTRY gate...");
+    set_servo_angle(MCPWM_UNIT_0, MCPWM_TIMER_0, SERVO_ENTRY_GPIO, GATE_CLOSED_ANGLE);
+    vTaskDelete(NULL);
 }
 
 /* Function to open entry gate */
 static void open_entry_gate(void)
 {
-    ESP_LOGI(TAG, "Opening entry gate");
+    ESP_LOGI(TAG, "Opening ENTRY gate...");
     set_servo_angle(MCPWM_UNIT_0, MCPWM_TIMER_0, SERVO_ENTRY_GPIO, GATE_OPEN_ANGLE);
     
     xTaskCreate(
@@ -71,19 +80,19 @@ static void open_entry_gate(void)
     );
 }
 
-/* Function to close entry gate after delay */
-static void close_entry_gate_task(void *pvParameters)
+/* Function to close exit gate after delay */
+static void close_exit_gate_task(void *pvParameters)
 {
     vTaskDelay(pdMS_TO_TICKS(GATE_OPEN_TIME_MS));
-    ESP_LOGI(TAG, "Closing entry gate");
-    set_servo_angle(MCPWM_UNIT_0, MCPWM_TIMER_0, SERVO_ENTRY_GPIO, GATE_CLOSED_ANGLE);
+    ESP_LOGI(TAG, "Closing EXIT gate...");
+    set_servo_angle(MCPWM_UNIT_0, MCPWM_TIMER_1, SERVO_EXIT_GPIO, GATE_CLOSED_ANGLE);
     vTaskDelete(NULL);
 }
 
 /* Function to open exit gate */
 static void open_exit_gate(void)
 {
-    ESP_LOGI(TAG, "Opening exit gate");
+    ESP_LOGI(TAG, "Opening EXIT gate...");
     set_servo_angle(MCPWM_UNIT_0, MCPWM_TIMER_1, SERVO_EXIT_GPIO, GATE_OPEN_ANGLE);
 
     xTaskCreate(
@@ -96,15 +105,6 @@ static void open_exit_gate(void)
     );
 }
 
-/* Function to close exit gate after delay */
-static void close_exit_gate_task(void *pvParameters)
-{
-    vTaskDelay(pdMS_TO_TICKS(GATE_OPEN_TIME_MS));
-    ESP_LOGI(TAG, "Closing exit gate");
-    set_servo_angle(MCPWM_UNIT_0, MCPWM_TIMER_1, SERVO_EXIT_GPIO, GATE_CLOSED_ANGLE);
-    vTaskDelete(NULL);
-}
-
 /* MQTT event handler */
 static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data)
 {
@@ -112,25 +112,25 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
 
     switch (event->event_id) {
         case MQTT_EVENT_CONNECTED:
-            ESP_LOGI(TAG, "MQTT connected");
+            ESP_LOGI(TAG, "MQTT connected!");
             esp_mqtt_client_subscribe(mqtt_client, MQTT_TOPIC_ENTRY, 0);
             esp_mqtt_client_subscribe(mqtt_client, MQTT_TOPIC_EXIT, 0);
             break;
 
         case MQTT_EVENT_DISCONNECTED:
-            ESP_LOGI(TAG, "MQTT disconnected");
+            ESP_LOGI(TAG, "MQTT disconnected!");
             break;
 
         case MQTT_EVENT_SUBSCRIBED:
-            ESP_LOGI(TAG, "MQTT subscribed to topic");
+            ESP_LOGI(TAG, "MQTT subscribed to topic!");
             break;
 
         case MQTT_EVENT_UNSUBSCRIBED:
-            ESP_LOGI(TAG, "MQTT unsubscribed from topic");
+            ESP_LOGI(TAG, "MQTT unsubscribed from topic!");
             break;
 
         case MQTT_EVENT_DATA:
-            ESP_LOGI(TAG, "MQTT data received");
+            ESP_LOGI(TAG, "MQTT data received!");
 
             if (strncmp(event->topic, MQTT_TOPIC_ENTRY, event->topic_len) == 0) {
                 /* Check message content - expecting "open" */
@@ -146,14 +146,13 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
             break;
 
         case MQTT_EVENT_ERROR:
-            ESP_LOGI(TAG, "MQTT error");
+            ESP_LOGI(TAG, "MQTT error!");
             break;
 
         default:
-            ESP_LOGI(TAG, "Other MQTT event %d", event->event_id);
+            ESP_LOGI(TAG, "Other MQTT event %d!", event->event_id);
             break;
     }
-    return ESP_OK;
 }
 
 /* Function to initialise WiFi event handler */
@@ -166,11 +165,11 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base,
         if (s_retry_num < WIFI_MAXIMUM_RETRY) {
             esp_wifi_connect();
             s_retry_num++;
-            ESP_LOGI(TAG, "Retry connecting to WiFi");
+            ESP_LOGI(TAG, "Retry connecting to WiFi...");
         } else {
             xEventGroupSetBits(wifi_event_group, WIFI_FAIL_BIT);
         }
-        ESP_LOGI(TAG, "Failed to connect to WiFi");
+        ESP_LOGI(TAG, "Failed to connect to WiFi.");
     } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
         ip_event_got_ip_t* event = (ip_event_got_ip_t*) event_data;
         ESP_LOGI(TAG, "Got IP: " IPSTR, IP2STR(&event->ip_info.ip));
@@ -217,7 +216,7 @@ static void wifi_init(void)
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_config));
 
-    ESP_LOGI(TAG, "WiFi initialization completed");
+    ESP_LOGI(TAG, "WiFi initialization completed!");
     
     EventBits_t bits = xEventGroupWaitBits(wifi_event_group,
                                             WIFI_CONNECTED_BIT | WIFI_FAIL_BIT,
@@ -230,14 +229,14 @@ static void wifi_init(void)
     } else if (bits & WIFI_FAIL_BIT) {
         ESP_LOGI(TAG, "Failed to connect to WiFi SSID: %s", WIFI_SSID);
     } else {
-        ESP_LOGE(TAG, "Unexpected event");
+        ESP_LOGE(TAG, "Unexpected event.");
     }
 }
 
 /* Function to initialize servos */
 static void servo_init(void)
 {
-    ESP_LOGI(TAG, "Initializing servo motors");
+    ESP_LOGI(TAG, "Initializing servo motors...");
 
     mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM0A, SERVO_ENTRY_GPIO);
     mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM1A, SERVO_EXIT_GPIO);
@@ -261,7 +260,7 @@ static void servo_init(void)
 /* Function to initialize MQTT */
 static void mqtt_init(void)
 {
-    ESP_LOGI(TAG, "Initializing MQTT client");
+    ESP_LOGI(TAG, "Initializing MQTT client...");
     
     esp_mqtt_client_config_t mqtt_cfg = {
         .broker.address.hostname = MQTT_BROKER_ADDRESS,
@@ -278,7 +277,7 @@ static void mqtt_init(void)
 
 void app_main(void)
 {
-    ESP_LOGI(TAG, "Starting gate system");
+    ESP_LOGI(TAG, "Starting gate system...");
     
     esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
@@ -293,5 +292,5 @@ void app_main(void)
     
     mqtt_init();
     
-    ESP_LOGI(TAG, "Gate system initialized and ready");
+    ESP_LOGI(TAG, "Gate system initialized and ready.");
 }
