@@ -1,0 +1,338 @@
+Executing action: all (aliases: build)
+Running ninja in directory /Users/prkaaviya/Documents/PlatformIO/Projects/Gate-System/build
+Executing "ninja all"...
+[1/4] cd /Users/prkaaviya/Documents/PlatformIO/Projects...s/PlatformIO/Projects/Gate-System/build/Gate-System.bin
+Gate-System.bin binary size 0xe91a0 bytes. Smallest app partition is 0x100000 bytes. 0x16e60 bytes (9%) free.
+[1/1] cd /Users/prkaaviya/Documents/PlatformIO/Projects...IO/Projects/Gate-System/build/bootloader/bootloader.bin
+Bootloader binary size 0x56d0 bytes. 0x2930 bytes (32%) free.
+[4/4] Completed 'bootloader'Executing action: flash
+Serial port /dev/cu.usbmodem1101
+Connecting...
+Detecting chip type... ESP32-C6
+Running ninja in directory /Users/prkaaviya/Documents/PlatformIO/Projects/Gate-System/build
+Executing "ninja flash"...
+[1/5] cd /Users/prkaaviya/Documents/PlatformIO/Projects...s/PlatformIO/Projects/Gate-System/build/Gate-System.bin
+Gate-System.bin binary size 0xe91a0 bytes. Smallest app partition is 0x100000 bytes. 0x16e60 bytes (9%) free.
+[1/1] cd /Users/prkaaviya/Documents/PlatformIO/Projects...IO/Projects/Gate-System/build/bootloader/bootloader.bin
+Bootloader binary size 0x56d0 bytes. 0x2930 bytes (32%) free.
+[4/5] cd /Users/prkaaviya/esp/esp-idf/components/esptoo...esp/esp-idf/components/esptool_py/run_serial_tool.cmake
+esptool.py --chip esp32c6 -p /dev/cu.usbmodem1101 -b 460800 --before=default_reset --after=hard_reset write_flash --flash_mode dio --flash_freq 80m --flash_size 2MB 0x0 bootloader/bootloader.bin 0x10000 Gate-System.bin 0x8000 partition_table/partition-table.bin
+esptool.py v4.8.1
+Serial port /dev/cu.usbmodem1101
+Connecting...
+Chip is ESP32-C6 (QFN40) (revision v0.0)
+Features: WiFi 6, BT 5, IEEE802.15.4
+Crystal is 40MHz
+MAC: 40:4c:ca:ff:fe:4e:15:0c
+BASE MAC: 40:4c:ca:4e:15:0c
+MAC_EXT: ff:fe
+Uploading stub...
+Running stub...
+Stub running...
+Changing baud rate to 460800
+Changed.
+Configuring flash size...
+Flash will be erased from 0x00000000 to 0x00005fff...
+Flash will be erased from 0x00010000 to 0x000f9fff...
+Flash will be erased from 0x00008000 to 0x00008fff...
+SHA digest in image updated
+Compressed 22224 bytes to 13315...
+Writing at 0x00000000... (100 %)
+Wrote 22224 bytes (13315 compressed) at 0x00000000 in 0.3 seconds (effective 579.9 kbit/s)...
+Hash of data verified.
+Compressed 954784 bytes to 546934...
+Writing at 0x000f4ef0... (100 %)
+Wrote 954784 bytes (546934 compressed) at 0x00010000 in 5.1 seconds (effective 1491.2 kbit/s)...
+Hash of data verified.
+Compressed 3072 bytes to 103...
+Writing at 0x00008000... (100 %)
+Wrote 3072 bytes (103 compressed) at 0x00008000 in 0.0 seconds (effective 609.1 kbit/s)...
+Hash of data verified.
+
+Leaving...
+Hard resetting via RTS pin...
+Executing action: monitor
+Running idf_monitor in directory /Users/prkaaviya/Documents/PlatformIO/Projects/Gate-System
+Executing "/Users/prkaaviya/.espressif/python_env/idf5.2_py3.12_env/bin/python /Users/prkaaviya/esp/esp-idf/tools/idf_monitor.py -p /dev/cu.usbmodem1101 -b 115200 --toolchain-prefix riscv32-esp-elf- --target esp32c6 --revision 0 --decode-panic backtrace /Users/prkaaviya/Documents/PlatformIO/Projects/Gate-System/build/Gate-System.elf -m '/Users/prkaaviya/.espressif/python_env/idf5.2_py3.12_env/bin/python' '/Users/prkaaviya/esp/esp-idf/tools/idf.py'"...
+--- esp-idf-monitor 1.5.0 on /dev/cu.usbmodem1101 115200
+--- Quit: Ctrl+] | Menu: Ctrl+T | Help: Ctrl+T followed by Ctrl+H
+ESP-ROM:esp32c6-20220919
+Build:Sep 19 2022
+rst:0x15 (USB_UART_HPSYS),boot:0xc (SPI_FAST_FLASH_BOOT)
+Saved PC:0x4001a36e
+--- 0x4001a36e: ets_sha_process in ROM
+
+SPIWP:0xee
+mode:DIO, clock div:2
+load:0x40875720,len:0x18ec
+load:0x4086c410,len:0xe60
+load:0x4086e610,len:0x2f2c
+entry 0x4086c41a
+I (23) boot: ESP-IDF v5.2.3-955-g0830c08e89 2nd stage bootloader
+I (23) boot: compile time Feb 28 2025 00:34:38
+I (24) boot: chip revision: v0.0
+I (27) boot: efuse block revision: v0.1
+I (32) boot.esp32c6: SPI Speed      : 80MHz
+I (36) boot.esp32c6: SPI Mode       : DIO
+I (41) boot.esp32c6: SPI Flash Size : 2MB
+I (46) boot: Enabling RNG early entropy source...
+I (51) boot: Partition Table:
+I (55) boot: ## Label            Usage          Type ST Offset   Length
+I (62) boot:  0 nvs              WiFi data        01 02 00009000 00006000
+I (70) boot:  1 phy_init         RF data          01 01 0000f000 00001000
+I (77) boot:  2 factory          factory app      00 00 00010000 00100000
+I (85) boot: End of partition table
+I (89) esp_image: segment 0: paddr=00010020 vaddr=420b0020 size=20af0h (133872) map
+I (123) esp_image: segment 1: paddr=00030b18 vaddr=40800000 size=07500h ( 29952) load
+I (130) esp_image: segment 2: paddr=00038020 vaddr=42000020 size=ada00h (711168) map
+I (267) esp_image: segment 3: paddr=000e5a28 vaddr=40807500 size=0fd38h ( 64824) load
+I (281) esp_image: segment 4: paddr=000f5768 vaddr=40817240 size=03a08h ( 14856) load
+I (291) boot: Loaded app from partition at offset 0x10000
+I (291) boot: Disabling RNG early entropy source...
+I (302) cpu_start: Unicore app
+W (312) clk: esp_perip_clk_init() has not been implemented yet
+I (318) cpu_start: Pro cpu start user code
+I (318) cpu_start: cpu freq: 160000000 Hz
+I (319) cpu_start: Application information:
+I (321) cpu_start: Project name:     Gate-System
+I (327) cpu_start: App version:      3c16cae-dirty
+I (332) cpu_start: Compile time:     Mar  7 2025 14:21:01
+I (338) cpu_start: ELF file SHA256:  302c4f629...
+I (343) cpu_start: ESP-IDF:          v5.2.3-955-g0830c08e89
+I (350) cpu_start: Min chip rev:     v0.0
+I (354) cpu_start: Max chip rev:     v0.99 
+I (359) cpu_start: Chip rev:         v0.0
+I (364) heap_init: Initializing. RAM available for dynamic allocation:
+I (371) heap_init: At 40820450 len 0005C1C0 (368 KiB): RAM
+I (377) heap_init: At 4087C610 len 00002F54 (11 KiB): RAM
+I (383) heap_init: At 50000000 len 00003FE8 (15 KiB): RTCRAM
+I (391) spi_flash: detected chip: generic
+I (394) spi_flash: flash io: dio
+W (398) spi_flash: Detected size(8192k) larger than the size in the binary image header(2048k). Using the size in the binary image header.
+W (412) mcpwm(legacy): legacy driver is deprecated, please migrate to `driver/mcpwm_prelude.h`
+I (421) sleep: Configure to isolate all GPIO pins in sleep state
+I (428) sleep: Enable automatic switching of GPIO sleep configuration
+I (435) coexist: coex firmware version: 994b23e
+I (440) coexist: coexist rom version 5b8dcfa
+I (445) main_task: Started on CPU0
+I (445) main_task: Calling app_main()
+I (445) GATE_SYSTEM: [INIT] Starting gate system...
+MEMLOG,465,Before WiFi init,384844,384536,15388,384844,352256
+I (465) GATE_SYSTEM: --- MEMORY STATS for event: Before WiFi init ---
+I (465) GATE_SYSTEM: Free heap: 384844 bytes
+I (475) GATE_SYSTEM: Minimum free heap ever: 384536 bytes
+I (475) GATE_SYSTEM: Total allocated: 15388 bytes
+I (485) GATE_SYSTEM: Total free: 384844 bytes
+I (485) GATE_SYSTEM: Largest free block: 352256 bytes
+I (495) pp: pp rom version: 5b8dcfa
+I (495) net80211: net80211 rom version: 5b8dcfa
+I (515) wifi:wifi driver task: 40829560, prio:23, stack:6656, core=0
+I (515) wifi:wifi firmware version: 01d22db
+I (515) wifi:wifi certification version: v7.0
+I (515) wifi:config NVS flash: enabled
+I (525) wifi:config nano formating: disabled
+I (525) wifi:mac_version:HAL_MAC_ESP32AX_761,ut_version:N
+I (525) wifi:Init data frame dynamic rx buffer num: 32
+I (535) wifi:Init static rx mgmt buffer num: 5
+I (535) wifi:Init management short buffer num: 32
+I (545) wifi:Init dynamic tx buffer num: 32
+I (545) wifi:Init static tx FG buffer num: 2
+I (555) wifi:Init static rx buffer size: 1700
+I (555) wifi:Init static rx buffer num: 10
+I (555) wifi:Init dynamic rx buffer num: 32
+I (565) wifi_init: rx ba win: 6
+I (565) wifi_init: tcpip mbox: 32
+I (575) wifi_init: udp mbox: 6
+I (575) wifi_init: tcp mbox: 6
+I (575) wifi_init: tcp tx win: 5760
+I (585) wifi_init: tcp rx win: 5760
+I (585) wifi_init: tcp mss: 1440
+I (595) wifi_init: WiFi IRAM OP enabled
+I (595) wifi_init: WiFi RX IRAM OP enabled
+I (605) phy_init: phy_version 320,348a293,Sep  3 2024,16:33:12
+W (655) wifi:ACK_TAB0   :0x   90a0b, QAM16:0x9 (24Mbps), QPSK:0xa (12Mbps), BPSK:0xb (6Mbps)
+W (655) wifi:CTS_TAB0   :0x   90a0b, QAM16:0x9 (24Mbps), QPSK:0xa (12Mbps), BPSK:0xb (6Mbps)
+W (655) wifi:(agc)0x600a7128:0xd21eaa72, min.avgNF:0xce->0xd2(dB), RCalCount:0x1ea, min.RRssi:0xa72(-88.88)
+W (665) wifi:(TB)WDEV_PWR_TB_MCS0:19
+W (665) wifi:(TB)WDEV_PWR_TB_MCS1:19
+W (675) wifi:(TB)WDEV_PWR_TB_MCS2:19
+W (675) wifi:(TB)WDEV_PWR_TB_MCS3:19
+W (675) wifi:(TB)WDEV_PWR_TB_MCS4:19
+W (685) wifi:(TB)WDEV_PWR_TB_MCS5:19
+W (685) wifi:(TB)WDEV_PWR_TB_MCS6:18
+W (685) wifi:(TB)WDEV_PWR_TB_MCS7:18
+W (695) wifi:(TB)WDEV_PWR_TB_MCS8:17
+W (695) wifi:(TB)WDEV_PWR_TB_MCS9:15
+W (695) wifi:(TB)WDEV_PWR_TB_MCS10:15
+W (705) wifi:(TB)WDEV_PWR_TB_MCS11:15
+I (705) wifi:11ax coex: WDEVAX_PTI0(0x55777555), WDEVAX_PTI1(0x00003377).
+
+I (715) wifi:mode : sta (40:4c:ca:4e:15:0c)
+I (715) wifi:enable tsf
+I (725) GATE_SYSTEM: [INIT] WiFi initialization completed!
+I (735) wifi:new:<6,0>, old:<1,0>, ap:<255,255>, sta:<6,0>, prof:1
+I (735) wifi:(connect)dot11_authmode:0x3, pairwise_cipher:0x3, group_cipher:0x3
+I (745) wifi:state: init -> auth (b0)
+I (745) wifi:state: auth -> assoc (0)
+I (755) wifi:Extended Capabilities length:8, subtype:0x10, 52:8a:50:f3:fb:51, Operating mode notification Support
+I (755) wifi:state: assoc -> run (10)
+I (765) wifi:(trc)phytype:CBW20-SGI, snr:40, maxRate:144, highestRateIdx:0
+I (765) wifi:(trc)rate(S-MCS7, schedIdx:0), ampdu(rate:S-MCS7, schedIdx(0, stop:8)), snr:40, ampduState:wait operational
+I (775) wifi:ifidx:0, rssi:-49, nf:-89, phytype(0x3, CBW20-SGI), phymode(0x3, 11bgn), max_rate:1440, he:0
+I (785) wifi:max ampdu length exponent:3(65535 bytes), mmss:6(8 us)
+I (805) wifi:connected with PRKiPhone, aid = 1, channel 6, BW20, bssid = 52:8a:50:f3:fb:51
+I (815) wifi:security: WPA2-PSK, phy:11bgn, rssi:-49, cipher(pairwise:0x3, group:0x3), pmf:0, 
+I (815) wifi:pm start, type: 1, twt_start:0
+
+I (815) wifi:pm start, type:1, aid:0x1, trans-BSSID:52:8a:50:f3:fb:51, BSSID[5]:0x51, mbssid(max-indicator:0, index:0), he:0
+I (835) wifi:dp: 1, bi: 102400, li: 3, scale listen interval from 307200 us to 307200 us
+I (835) wifi:set rx beacon pti, rx_bcn_pti: 10, bcn_timeout: 25000, mt_pti: 10, mt_time: 10000
+I (845) wifi:[ADDBA]TX addba request, tid:0, dialogtoken:1, bufsize:64, A-MSDU:0(not supported), policy:1(IMR), ssn:0(0x0)
+I (855) wifi:[ADDBA]TX addba request, tid:7, dialogtoken:2, bufsize:64, A-MSDU:0(not supported), policy:1(IMR), ssn:0(0x20)
+I (865) wifi:[ADDBA]TX addba request, tid:5, dialogtoken:3, bufsize:64, A-MSDU:0(not supported), policy:1(IMR), ssn:0(0x0)
+I (885) wifi:[ADDBA]RX addba response, status:0, tid:7/tb:1(0xa1), bufsize:64, batimeout:0, txa_wnd:64
+I (885) wifi:[ADDBA]RX addba response, status:0, tid:5/tb:1(0xa1), bufsize:64, batimeout:0, txa_wnd:64
+I (895) wifi:[ADDBA]RX addba response, status:0, tid:0/tb:1(0xa1), bufsize:64, batimeout:0, txa_wnd:64
+I (945) wifi:AP's beacon interval = 102400 us, DTIM period = 1
+I (1885) esp_netif_handlers: sta ip: 172.20.10.3, mask: 255.255.255.240, gw: 172.20.10.1
+I (1885) GATE_SYSTEM: [INFO] Got IP: 172.20.10.3
+I (1885) GATE_SYSTEM: [INFO] Connected to WiFi SSID: PRKiPhone
+MEMLOG,1895,After WiFi init,333992,331108,65624,333992,303104
+I (1895) GATE_SYSTEM: --- MEMORY STATS for event: After WiFi init ---
+I (1905) GATE_SYSTEM: Free heap: 333992 bytes
+I (1905) GATE_SYSTEM: Minimum free heap ever: 331108 bytes
+I (1915) GATE_SYSTEM: Total allocated: 65624 bytes
+I (1915) GATE_SYSTEM: Total free: 333992 bytes
+I (1925) GATE_SYSTEM: Largest free block: 303104 bytes
+MEMLOG,1935,Before Servo init,333992,331108,65624,333992,303104
+I (1935) GATE_SYSTEM: --- MEMORY STATS for event: Before Servo init ---
+I (1945) GATE_SYSTEM: Free heap: 333992 bytes
+I (1945) GATE_SYSTEM: Minimum free heap ever: 331108 bytes
+I (1955) GATE_SYSTEM: Total allocated: 65624 bytes
+I (1965) GATE_SYSTEM: Total free: 333992 bytes
+I (1965) GATE_SYSTEM: Largest free block: 303104 bytes
+I (1975) GATE_SYSTEM: [INIT] Initializing servo motors...
+MEMLOG,1975,After Servo init,333992,331108,65624,333992,303104
+I (1985) GATE_SYSTEM: --- MEMORY STATS for event: After Servo init ---
+I (1995) GATE_SYSTEM: Free heap: 333992 bytes
+I (1995) GATE_SYSTEM: Minimum free heap ever: 331108 bytes
+I (2005) GATE_SYSTEM: Total allocated: 65624 bytes
+I (2005) GATE_SYSTEM: Total free: 333992 bytes
+I (2015) GATE_SYSTEM: Largest free block: 303104 bytes
+MEMLOG,2015,Before MQTT init,334028,331108,65592,334028,303104
+I (2025) GATE_SYSTEM: --- MEMORY STATS for event: Before MQTT init ---
+I (2035) GATE_SYSTEM: Free heap: 334028 bytes
+I (2035) GATE_SYSTEM: Minimum free heap ever: 331108 bytes
+I (2045) GATE_SYSTEM: Total allocated: 65592 bytes
+I (2045) GATE_SYSTEM: Total free: 334028 bytes
+I (2055) GATE_SYSTEM: Largest free block: 303104 bytes
+I (2055) GATE_SYSTEM: [INIT] Initializing MQTT client...
+I (2065) GATE_SYSTEM: --- Other MQTT event 7---
+MEMLOG,2075,After MQTT init,323352,323136,76092,323352,294912
+I (2075) GATE_SYSTEM: --- MEMORY STATS for event: After MQTT init ---
+W (2075) wifi:<ba-add>idx:0, ifx:0, tid:0, TAHI:0x10051fb, TALO:0xf3508a52, (ssn:2, win:64, cur_ssn:2), CONF:0xc0000005
+I (2095) GATE_SYSTEM: Free heap: 322848 bytes
+I (2095) GATE_SYSTEM: Minimum free heap ever: 320944 bytes
+I (2105) GATE_SYSTEM: Total allocated: 76092 bytes
+I (2105) GATE_SYSTEM: Total free: 323352 bytes
+I (2115) GATE_SYSTEM: Largest free block: 294912 bytes
+I (2115) GATE_SYSTEM: [INFO] Gate system READY.
+I (2125) main_task: Returned from app_main()
+I (2385) GATE_SYSTEM: --- MQTT connected ---
+I (2505) GATE_SYSTEM: --- MQTT subscribed to topic ---
+I (2595) GATE_SYSTEM: --- MQTT subscribed to topic ---
+I (11505) GATE_SYSTEM: --- MQTT data received ---
+I (11505) GATE_SYSTEM: Topic: parking/gate/entry
+I (11505) GATE_SYSTEM: Data: open
+MEMLOG,11505,Before open entry gate,328060,320736,71412,328060,294912
+I (11515) GATE_SYSTEM: --- MEMORY STATS for event: Before open entry gate ---
+I (11515) GATE_SYSTEM: Free heap: 328060 bytes
+I (11525) GATE_SYSTEM: Minimum free heap ever: 320736 bytes
+I (11525) GATE_SYSTEM: Total allocated: 71412 bytes
+I (11535) GATE_SYSTEM: Total free: 328060 bytes
+I (11545) GATE_SYSTEM: Largest free block: 294912 bytes
+I (11545) GATE_SYSTEM: [ACTION] Opening ENTRY gate...
+I (16555) GATE_SYSTEM: [ACTION] Closing ENTRY gate...
+MEMLOG,16555,After close entry gate,325632,320736,73832,325632,294912
+I (16555) GATE_SYSTEM: --- MEMORY STATS for event: After close entry gate ---
+I (16555) GATE_SYSTEM: Free heap: 325632 bytes
+I (16565) GATE_SYSTEM: Minimum free heap ever: 320736 bytes
+I (16575) GATE_SYSTEM: Total allocated: 73832 bytes
+I (16575) GATE_SYSTEM: Total free: 325632 bytes
+I (16585) GATE_SYSTEM: Largest free block: 294912 bytes
+I (19795) GATE_SYSTEM: --- MQTT data received ---
+I (19795) GATE_SYSTEM: Topic: parking/gate/entry
+I (19795) GATE_SYSTEM: Data: open
+MEMLOG,19805,Before open entry gate,328060,320736,71412,328060,294912
+I (19805) GATE_SYSTEM: --- MEMORY STATS for event: Before open entry gate ---
+I (19815) GATE_SYSTEM: Free heap: 328060 bytes
+I (19815) GATE_SYSTEM: Minimum free heap ever: 320736 bytes
+I (19825) GATE_SYSTEM: Total allocated: 71412 bytes
+I (19835) GATE_SYSTEM: Total free: 328060 bytes
+I (19835) GATE_SYSTEM: Largest free block: 294912 bytes
+I (19845) GATE_SYSTEM: [ACTION] Opening ENTRY gate...
+I (24845) GATE_SYSTEM: [ACTION] Closing ENTRY gate...
+MEMLOG,24845,After close entry gate,325632,320736,73832,325632,294912
+I (24845) GATE_SYSTEM: --- MEMORY STATS for event: After close entry gate ---
+I (24845) GATE_SYSTEM: Free heap: 325632 bytes
+I (24855) GATE_SYSTEM: Minimum free heap ever: 320736 bytes
+I (24865) GATE_SYSTEM: Total allocated: 73832 bytes
+I (24865) GATE_SYSTEM: Total free: 325632 bytes
+I (24875) GATE_SYSTEM: Largest free block: 294912 bytes
+I (26145) GATE_SYSTEM: --- MQTT data received ---
+I (26145) GATE_SYSTEM: Topic: parking/gate/entry
+I (26145) GATE_SYSTEM: Data: open
+MEMLOG,26145,Before open entry gate,328060,320736,71412,328060,294912
+I (26155) GATE_SYSTEM: --- MEMORY STATS for event: Before open entry gate ---
+I (26165) GATE_SYSTEM: Free heap: 328060 bytes
+I (26165) GATE_SYSTEM: Minimum free heap ever: 320736 bytes
+I (26175) GATE_SYSTEM: Total allocated: 71412 bytes
+I (26175) GATE_SYSTEM: Total free: 328060 bytes
+I (26185) GATE_SYSTEM: Largest free block: 294912 bytes
+I (26185) GATE_SYSTEM: [ACTION] Opening ENTRY gate...
+I (31195) GATE_SYSTEM: [ACTION] Closing ENTRY gate...
+MEMLOG,31195,After close entry gate,325632,320736,73832,325632,294912
+I (31195) GATE_SYSTEM: --- MEMORY STATS for event: After close entry gate ---
+I (31195) GATE_SYSTEM: Free heap: 325632 bytes
+I (31205) GATE_SYSTEM: Minimum free heap ever: 320736 bytes
+I (31215) GATE_SYSTEM: Total allocated: 73832 bytes
+I (31215) GATE_SYSTEM: Total free: 325632 bytes
+I (31225) GATE_SYSTEM: Largest free block: 294912 bytes
+I (32795) GATE_SYSTEM: --- MQTT data received ---
+I (32805) GATE_SYSTEM: Topic: parking/gate/entry
+I (32805) GATE_SYSTEM: Data: open
+MEMLOG,32805,Before open entry gate,328060,320736,71412,328060,294912
+I (32805) GATE_SYSTEM: --- MEMORY STATS for event: Before open entry gate ---
+I (32815) GATE_SYSTEM: Free heap: 328060 bytes
+I (32825) GATE_SYSTEM: Minimum free heap ever: 320736 bytes
+I (32825) GATE_SYSTEM: Total allocated: 71412 bytes
+I (32835) GATE_SYSTEM: Total free: 328060 bytes
+I (32835) GATE_SYSTEM: Largest free block: 294912 bytes
+I (32845) GATE_SYSTEM: [ACTION] Opening ENTRY gate...
+I (37855) GATE_SYSTEM: [ACTION] Closing ENTRY gate...
+MEMLOG,37855,After close entry gate,325632,320736,73832,325632,294912
+I (37855) GATE_SYSTEM: --- MEMORY STATS for event: After close entry gate ---
+I (37855) GATE_SYSTEM: Free heap: 325632 bytes
+I (37865) GATE_SYSTEM: Minimum free heap ever: 320736 bytes
+I (37875) GATE_SYSTEM: Total allocated: 73832 bytes
+I (37875) GATE_SYSTEM: Total free: 325632 bytes
+I (37885) GATE_SYSTEM: Largest free block: 294912 bytes
+I (38735) GATE_SYSTEM: --- MQTT data received ---
+I (38735) GATE_SYSTEM: Topic: parking/gate/entry
+I (38735) GATE_SYSTEM: Data: open
+MEMLOG,38745,Before open entry gate,328060,320736,71412,328060,294912
+I (38745) GATE_SYSTEM: --- MEMORY STATS for event: Before open entry gate ---
+I (38755) GATE_SYSTEM: Free heap: 328060 bytes
+I (38765) GATE_SYSTEM: Minimum free heap ever: 320736 bytes
+I (38765) GATE_SYSTEM: Total allocated: 71412 bytes
+I (38775) GATE_SYSTEM: Total free: 328060 bytes
+I (38775) GATE_SYSTEM: Largest free block: 294912 bytes
+I (38785) GATE_SYSTEM: [ACTION] Opening ENTRY gate...
+I (43795) GATE_SYSTEM: [ACTION] Closing ENTRY gate...
+MEMLOG,43795,After close entry gate,325632,320736,73832,325632,294912
+I (43795) GATE_SYSTEM: --- MEMORY STATS for event: After close entry gate ---
+I (43795) GATE_SYSTEM: Free heap: 325632 bytes
+I (43805) GATE_SYSTEM: Minimum free heap ever: 320736 bytes
+I (43815) GATE_SYSTEM: Total allocated: 73832 bytes
+I (43815) GATE_SYSTEM: Total free: 325632 bytes
+I (43825) GATE_SYSTEM: Largest free block: 294912 bytes

@@ -1,3 +1,4 @@
+#include <inttypes.h> 
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
@@ -10,6 +11,8 @@
 #include "esp_wifi.h"
 #include "esp_netif.h"
 #include "esp_event.h"
+#include "esp_heap_caps.h"
+#include "esp_system.h"
 #include "nvs_flash.h"
 #include "driver/mcpwm.h"
 #include "mqtt_client.h"
@@ -49,6 +52,31 @@ static EventGroupHandle_t wifi_event_group;
 static int s_retry_num = 0;
 static esp_mqtt_client_handle_t mqtt_client = NULL;
 
+/* Function to print memory stats */
+void print_memory_stats(char *event) {
+    uint32_t free_heap = esp_get_free_heap_size();
+    uint32_t min_free_heap = esp_get_minimum_free_heap_size();
+    
+    multi_heap_info_t info;
+    heap_caps_get_info(&info, MALLOC_CAP_DEFAULT);
+
+    printf("MEMLOG,%lu,%s,%lu,%lu,%lu,%lu,%lu\n", 
+        (unsigned long)esp_log_timestamp(),
+        event,
+        (unsigned long)free_heap, 
+        (unsigned long)min_free_heap, 
+        (unsigned long)info.total_allocated_bytes,
+        (unsigned long)info.total_free_bytes,
+        (unsigned long)info.largest_free_block);
+
+    ESP_LOGI(TAG, "--- MEMORY STATS for event: %s ---", event);
+    ESP_LOGI(TAG, "Free heap: %lu bytes", (unsigned long)esp_get_free_heap_size());
+    ESP_LOGI(TAG, "Minimum free heap ever: %lu bytes", (unsigned long)esp_get_minimum_free_heap_size());
+    ESP_LOGI(TAG, "Total allocated: %lu bytes", (unsigned long)info.total_allocated_bytes);
+    ESP_LOGI(TAG, "Total free: %lu bytes", (unsigned long)info.total_free_bytes);
+    ESP_LOGI(TAG, "Largest free block: %lu bytes", (unsigned long)info.largest_free_block);
+}
+
 /* Function to set servo angle */
 static void set_servo_angle(mcpwm_unit_t unit, mcpwm_timer_t timer, uint32_t gpio_num, uint32_t angle)
 {
@@ -60,15 +88,18 @@ static void set_servo_angle(mcpwm_unit_t unit, mcpwm_timer_t timer, uint32_t gpi
 static void close_entry_gate_task(void *pvParameters)
 {
     vTaskDelay(pdMS_TO_TICKS(GATE_OPEN_TIME_MS));
-    ESP_LOGI(TAG, "Closing ENTRY gate...");
+    ESP_LOGI(TAG, "[ACTION] Closing ENTRY gate...");
     set_servo_angle(MCPWM_UNIT_0, MCPWM_TIMER_0, SERVO_ENTRY_GPIO, GATE_CLOSED_ANGLE_1);
+    print_memory_stats("After close entry gate");
     vTaskDelete(NULL);
 }
 
 /* Function to open entry gate */
 static void open_entry_gate(void)
 {
-    ESP_LOGI(TAG, "Opening ENTRY gate...");
+    print_memory_stats("Before open entry gate");
+    
+    ESP_LOGI(TAG, "[ACTION] Opening ENTRY gate...");
     set_servo_angle(MCPWM_UNIT_0, MCPWM_TIMER_0, SERVO_ENTRY_GPIO, GATE_OPEN_ANGLE);
     
     xTaskCreate(
@@ -85,15 +116,18 @@ static void open_entry_gate(void)
 static void close_exit_gate_task(void *pvParameters)
 {
     vTaskDelay(pdMS_TO_TICKS(GATE_OPEN_TIME_MS));
-    ESP_LOGI(TAG, "Closing EXIT gate...");
+    ESP_LOGI(TAG, "[ACTION] Closing EXIT gate...");
     set_servo_angle(MCPWM_UNIT_0, MCPWM_TIMER_1, SERVO_EXIT_GPIO, GATE_CLOSED_ANGLE_2);
+    print_memory_stats("After close exit gate");
     vTaskDelete(NULL);
 }
 
 /* Function to open exit gate */
 static void open_exit_gate(void)
 {
-    ESP_LOGI(TAG, "Opening EXIT gate...");
+    print_memory_stats("After open exit gate");
+    
+    ESP_LOGI(TAG, "[ACTION] Opening EXIT gate...");
     set_servo_angle(MCPWM_UNIT_0, MCPWM_TIMER_1, SERVO_EXIT_GPIO, GATE_OPEN_ANGLE);
 
     xTaskCreate(
@@ -113,25 +147,25 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
 
     switch (event->event_id) {
         case MQTT_EVENT_CONNECTED:
-            ESP_LOGI(TAG, "MQTT connected!");
+            ESP_LOGI(TAG, "--- MQTT connected ---");
             esp_mqtt_client_subscribe(mqtt_client, MQTT_TOPIC_ENTRY, 0);
             esp_mqtt_client_subscribe(mqtt_client, MQTT_TOPIC_EXIT, 0);
             break;
 
         case MQTT_EVENT_DISCONNECTED:
-            ESP_LOGI(TAG, "MQTT disconnected!");
+            ESP_LOGI(TAG, "--- MQTT disconnected ---");
             break;
 
         case MQTT_EVENT_SUBSCRIBED:
-            ESP_LOGI(TAG, "MQTT subscribed to topic!");
+            ESP_LOGI(TAG, "--- MQTT subscribed to topic ---");
             break;
 
         case MQTT_EVENT_UNSUBSCRIBED:
-            ESP_LOGI(TAG, "MQTT unsubscribed from topic!");
+            ESP_LOGI(TAG, "--- MQTT unsubscribed from topic ---");
             break;
 
         case MQTT_EVENT_DATA:
-            ESP_LOGI(TAG, "MQTT data received!");
+            ESP_LOGI(TAG, "--- MQTT data received ---");
 
             ESP_LOGI(TAG, "Topic: %.*s", event->topic_len, event->topic);
             ESP_LOGI(TAG, "Data: %.*s", event->data_len, event->data);
@@ -150,11 +184,11 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
             break;
 
         case MQTT_EVENT_ERROR:
-            ESP_LOGI(TAG, "MQTT error!");
+            ESP_LOGI(TAG, "--- MQTT error ---");
             break;
 
         default:
-            ESP_LOGI(TAG, "Other MQTT event %d!", event->event_id);
+            ESP_LOGI(TAG, "--- Other MQTT event %d---", event->event_id);
             break;
     }
 }
@@ -169,14 +203,14 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base,
         if (s_retry_num < WIFI_MAXIMUM_RETRY) {
             esp_wifi_connect();
             s_retry_num++;
-            ESP_LOGI(TAG, "Retry connecting to WiFi...");
+            ESP_LOGI(TAG, "[RETRY] Connecting to WiFi...");
         } else {
             xEventGroupSetBits(wifi_event_group, WIFI_FAIL_BIT);
         }
-        ESP_LOGI(TAG, "Failed to connect to WiFi.");
+        ESP_LOGI(TAG, "[ERROR] Failed to connect to WiFi.");
     } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
         ip_event_got_ip_t* event = (ip_event_got_ip_t*) event_data;
-        ESP_LOGI(TAG, "Got IP: " IPSTR, IP2STR(&event->ip_info.ip));
+        ESP_LOGI(TAG, "[INFO] Got IP: " IPSTR, IP2STR(&event->ip_info.ip));
         s_retry_num = 0;
         xEventGroupSetBits(wifi_event_group, WIFI_CONNECTED_BIT);
     }
@@ -185,6 +219,8 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base,
 // Initialize WiFi
 static void wifi_init(void)
 {
+    print_memory_stats("Before WiFi init");
+
     wifi_event_group = xEventGroupCreate();
 
     ESP_ERROR_CHECK(esp_netif_init());
@@ -222,7 +258,7 @@ static void wifi_init(void)
     ESP_ERROR_CHECK(esp_wifi_set_protocol(WIFI_IF_STA, WIFI_PROTOCOL_11B | WIFI_PROTOCOL_11G | WIFI_PROTOCOL_11N));
     ESP_ERROR_CHECK(esp_wifi_start());
 
-    ESP_LOGI(TAG, "WiFi initialization completed!");
+    ESP_LOGI(TAG, "[INIT] WiFi initialization completed!");
     
     EventBits_t bits = xEventGroupWaitBits(wifi_event_group,
                                             WIFI_CONNECTED_BIT | WIFI_FAIL_BIT,
@@ -231,18 +267,22 @@ static void wifi_init(void)
                                             portMAX_DELAY);
 
     if (bits & WIFI_CONNECTED_BIT) {
-        ESP_LOGI(TAG, "Connected to WiFi SSID: %s", WIFI_SSID);
+        ESP_LOGI(TAG, "[INFO] Connected to WiFi SSID: %s", WIFI_SSID);
     } else if (bits & WIFI_FAIL_BIT) {
-        ESP_LOGI(TAG, "Failed to connect to WiFi SSID: %s", WIFI_SSID);
+        ESP_LOGI(TAG, "[ERROR] Failed to connect to WiFi SSID: %s", WIFI_SSID);
     } else {
-        ESP_LOGE(TAG, "Unexpected event.");
+        ESP_LOGE(TAG, "[WARN] Unexpected event.");
     }
+
+    print_memory_stats("After WiFi init");
 }
 
 /* Function to initialize servos */
 static void servo_init(void)
 {
-    ESP_LOGI(TAG, "Initializing servo motors...");
+    print_memory_stats("Before Servo init");
+
+    ESP_LOGI(TAG, "[INIT] Initializing servo motors...");
 
     mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM0A, SERVO_ENTRY_GPIO);
     mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM1A, SERVO_EXIT_GPIO);
@@ -261,12 +301,16 @@ static void servo_init(void)
     /* Move servos to closed position */
     set_servo_angle(MCPWM_UNIT_0, MCPWM_TIMER_0, SERVO_ENTRY_GPIO, GATE_CLOSED_ANGLE_1);
     set_servo_angle(MCPWM_UNIT_0, MCPWM_TIMER_1, SERVO_EXIT_GPIO, GATE_CLOSED_ANGLE_2);
+
+    print_memory_stats("After Servo init");
 }
 
 /* Function to initialize MQTT */
 static void mqtt_init(void)
 {
-    ESP_LOGI(TAG, "Initializing MQTT client...");
+    print_memory_stats("Before MQTT init");
+
+    ESP_LOGI(TAG, "[INIT] Initializing MQTT client...");
 
     esp_mqtt_client_config_t mqtt_cfg = {
         .broker.address.hostname = MQTT_BROKER_ADDRESS,
@@ -279,11 +323,13 @@ static void mqtt_init(void)
     mqtt_client = esp_mqtt_client_init(&mqtt_cfg);
     esp_mqtt_client_register_event(mqtt_client, ESP_EVENT_ANY_ID, mqtt_event_handler, NULL);
     esp_mqtt_client_start(mqtt_client);
+
+    print_memory_stats("After MQTT init");
 }
 
 void app_main(void)
 {
-    ESP_LOGI(TAG, "Starting gate system...");
+    ESP_LOGI(TAG, "[INIT] Starting gate system...");
 
     esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
@@ -298,5 +344,5 @@ void app_main(void)
 
     mqtt_init();
 
-    ESP_LOGI(TAG, "Gate system initialized and ready.");
+    ESP_LOGI(TAG, "[INFO] Gate system READY.");
 }
