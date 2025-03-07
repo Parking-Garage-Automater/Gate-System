@@ -1,0 +1,5 @@
+Operation,Before (bytes),After (bytes),Delta (bytes),% of Initial Memory
+WiFi Init,384844,333992,50852,13.213665797050233
+Servo Init,333992,333992,0,0.0
+MQTT Init,334028,323352,10676,3.1961392458117284
+Total System Init,384844,323352,61492,15.978422425710159

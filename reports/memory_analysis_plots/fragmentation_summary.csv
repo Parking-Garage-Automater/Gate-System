@@ -1,0 +1,5 @@
+Operation Stage,Free Heap,Largest Free Block,Fragmentation Index (%)
+Initial,384844.0,352256.0,8.46784671191444
+After WiFi Init,333992.0,303104.0,9.248125703609666
+After MQTT Init,323352.0,294912.0,8.79536851480739
+During Operations,325632.0,294912.0,9.433962264150942
