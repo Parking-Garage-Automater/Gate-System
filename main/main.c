@@ -20,10 +20,10 @@
 /* WiFi configuration */
 #define WIFI_SSID "PRKiPhone"
 #define WIFI_PASS "prka1705"
-#define WIFI_MAXIMUM_RETRY 5
+#define WIFI_MAXIMUM_RETRY 10
 
 /* MQTT configuration */
-#define MQTT_BROKER_ADDRESS "152.53.124.121"
+#define MQTT_BROKER_ADDRESS "138.199.217.16"
 #define MQTT_BROKER_PORT 1883
 #define MQTT_USERNAME "parkers"
 #define MQTT_PASSWORD "parkers"
@@ -38,10 +38,11 @@
 #define SERVO_EXIT_GPIO 18           /* GPIO for exit gate servo */
 
 /* Gate configuration */
-#define GATE_OPEN_ANGLE 90           /* Angle when gate is open */
-#define GATE_CLOSED_ANGLE_1 180      /* Angle for entry servo motor when gate is closed */
-#define GATE_CLOSED_ANGLE_2 200        /* Angle for exit servo motor when gate is closed */
-#define GATE_OPEN_TIME_MS 5000       /* Time to keep gate open in milliseconds */
+#define GATE_OPEN_ANGLE1 90             /* Angle when entry gate is open */
+#define GATE_CLOSED_ANGLE_1 180         /* Angle for entry servo motor when gate is open */
+#define GATE_OPEN_ANGLE2 90            /* Angle when exit gate is open */
+#define GATE_CLOSED_ANGLE_2 180          /* Angle for exit servo motor when gate is closed */
+#define GATE_OPEN_TIME_MS 5000          /* Time to keep gate open in milliseconds */
 
 static const char *TAG = "GATE_SYSTEM";
 static EventGroupHandle_t wifi_event_group;
@@ -100,7 +101,7 @@ static void open_entry_gate(void)
     print_memory_stats("Before open entry gate");
     
     ESP_LOGI(TAG, "[ACTION] Opening ENTRY gate...");
-    set_servo_angle(MCPWM_UNIT_0, MCPWM_TIMER_0, SERVO_ENTRY_GPIO, GATE_OPEN_ANGLE);
+    set_servo_angle(MCPWM_UNIT_0, MCPWM_TIMER_0, SERVO_ENTRY_GPIO, GATE_OPEN_ANGLE1);
     
     xTaskCreate(
         (TaskFunction_t)&close_entry_gate_task,
@@ -128,7 +129,7 @@ static void open_exit_gate(void)
     print_memory_stats("After open exit gate");
     
     ESP_LOGI(TAG, "[ACTION] Opening EXIT gate...");
-    set_servo_angle(MCPWM_UNIT_0, MCPWM_TIMER_1, SERVO_EXIT_GPIO, GATE_OPEN_ANGLE);
+    set_servo_angle(MCPWM_UNIT_0, MCPWM_TIMER_1, SERVO_EXIT_GPIO, GATE_OPEN_ANGLE2);
 
     xTaskCreate(
         (TaskFunction_t)&close_exit_gate_task,
@@ -330,6 +331,9 @@ static void mqtt_init(void)
 void app_main(void)
 {
     ESP_LOGI(TAG, "[INIT] Starting gate system...");
+
+    set_servo_angle(MCPWM_UNIT_0, MCPWM_TIMER_0, SERVO_ENTRY_GPIO, 0);
+    set_servo_angle(MCPWM_UNIT_0, MCPWM_TIMER_0, SERVO_EXIT_GPIO, 0);
 
     esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
