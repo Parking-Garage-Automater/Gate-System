@@ -18,8 +18,8 @@
 #include "mqtt_client.h"
 
 /* WiFi configuration */
-#define WIFI_SSID "PRKiPhone"
-#define WIFI_PASS "prka1705"
+#define WIFI_SSID "Ze"
+#define WIFI_PASS "987654321"
 #define WIFI_MAXIMUM_RETRY 10
 
 /* MQTT configuration */
